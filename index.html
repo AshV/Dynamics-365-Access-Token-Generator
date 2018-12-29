@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quickstart for MSAL JS</title>
+    <title>Access Token Generator for Dynamics 365</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
     <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.2.3/js/msal.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -17,7 +17,7 @@
     var applicationConfig = {
         clientID: '1a4731d7-2b60-4089-bc60-3bf2b71f340f', //This is your client ID
         authority: "https://login.microsoftonline.com/common", //Default authority is https://login.microsoftonline.com/common
-        graphScopes: ["user.read"],
+        graphScopes: ["user_impersonation"],
         graphEndpoint: "https://graph.microsoft.com/v1.0/me"
     };
 
@@ -40,7 +40,8 @@
 
    function acquireTokenPopupAndCallMSGraph() {
         //Call acquireTokenSilent (iframe) to obtain a token for Microsoft Graph
-        myMSALObj.acquireTokenSilent(applicationConfig.graphScopes).then(function (accessToken) {
+       myMSALObj.acquireTokenSilent(applicationConfig.graphScopes).then(function (accessToken) {
+           alert(accessToken);
             callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
         }, function (error) {
             console.log(error);
