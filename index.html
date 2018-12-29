@@ -42,6 +42,7 @@
         //Call acquireTokenSilent (iframe) to obtain a token for Microsoft Graph
        myMSALObj.acquireTokenSilent(applicationConfig.graphScopes).then(function (accessToken) {
            alert(accessToken);
+           console.log(accessToken);
             callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
         }, function (error) {
             console.log(error);
