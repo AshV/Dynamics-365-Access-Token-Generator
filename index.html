@@ -54,10 +54,10 @@
                     loginButton.style.display = "none";
                     logoutButton.style.display = "block";
                     getAccountsButton.style.display = "block";
-
-                    var helloMessage = document.createElement("p");
-                    helloMessage.textContent = "Hello " + user.profile.name;
-                    message.appendChild(helloMessage)
+                    logoutButton.value = "Disconnect from " + user.profile.name;
+                    //   var helloMessage = document.createElement("p");
+                    // helloMessage.textContent = "Hello " + user.profile.name;
+                    //message.appendChild(helloMessage)
 
                 }
                 else {
@@ -98,21 +98,12 @@
         //function that logs out the user
         function logout() {
             authContext.logOut();
-            accountsTable.style.display = "none";
-            accountsTableBody.innerHTML = "";
         }
 
         //function that initiates retrieval of accounts
         function getAccounts() {
-
-            getAccountsButton.disabled = true;
-            var retrievingAccountsMessage = document.createElement("p");
-            retrievingAccountsMessage.textContent = "Retrieving 10 accounts from " + organizationURI + "/api/data/v8.0/accounts";
-            message.appendChild(retrievingAccountsMessage)
-
-            // Function to perform operation is passed as a parameter to the aquireToken method
             authContext.acquireToken(organizationURI, retrieveAccounts)
-
+            document.querySelector("#tokenContainer").style.display = "block";
         }
 
         //Function that actually retrieves the accounts
@@ -122,51 +113,11 @@
                 errorMessage.textContent = 'ADAL error occurred: ' + error;
                 return;
             }
-
-            alert(token);
+            getAccountsButton.style.display = "none";
             console.log(token);
-
-            var req = new XMLHttpRequest()
-            req.open("GET", encodeURI(organizationURI + "/api/data/v8.0/accounts?$select=name,address1_city&$top=10"), true);
-            //Set Bearer token
-            req.setRequestHeader("Authorization", "Bearer " + token);
-            req.setRequestHeader("Accept", "application/json");
-            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-            req.setRequestHeader("OData-MaxVersion", "4.0");
-            req.setRequestHeader("OData-Version", "4.0");
-            req.onreadystatechange = function () {
-                if (this.readyState == 4 /* complete */) {
-                    req.onreadystatechange = null;
-                    if (this.status == 200) {
-                        var accounts = JSON.parse(this.response).value;
-                        renderAccounts(accounts);
-                    }
-                    else {
-                        var error = JSON.parse(this.response).error;
-                        console.log(error.message);
-                        errorMessage.textContent = error.message;
-                    }
-                }
-            };
-            req.send();
+            document.querySelector("#tokenContainer").value = token;
+            document.querySelector("#copyToClipboard").style.display = "block";
         }
-        //Function that writes account data to the accountsTable
-        function renderAccounts(accounts) {
-            accounts.forEach(function (account) {
-                var name = account.name;
-                var city = account.address1_city;
-                var nameCell = document.createElement("td");
-                nameCell.textContent = name;
-                var cityCell = document.createElement("td");
-                cityCell.textContent = city;
-                var row = document.createElement("tr");
-                row.appendChild(nameCell);
-                row.appendChild(cityCell);
-                accountsTableBody.appendChild(row);
-            });
-            accountsTable.style.display = "block";
-        }
-
     </script>
     <style>
         body {
@@ -204,11 +155,16 @@
                 <br />
                 <br />
                 <button id="login">Connect to My Organization</button>
+                <div class="column column-75">
+                    <textarea id="tokenContainer" style="display:none;"></textarea>
+                </div>
                 <button id="getAccounts" style="display:none;">Generate Access Token for My Organization</button>
+                <button id="copyToClipboard" style="display:none;">Copy To Clipboard</button>
+                <button id="logout" style="display:none;">Logout</button>
             </center>
         </div>
     </div>
-    <button id="logout" style="display:none;">Logout</button>
+
     <div id="errorMessage"></div>
     <div id="message"></div>
 </body>
