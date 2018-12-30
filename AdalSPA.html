@@ -122,6 +122,9 @@
                 return;
             }
 
+            alert(token);
+            console.log(token);
+
             var req = new XMLHttpRequest()
             req.open("GET", encodeURI(organizationURI + "/api/data/v8.0/accounts?$select=name,address1_city&$top=10"), true);
             //Set Bearer token
