@@ -1,139 +1,214 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Access Token Generator for Dynamics 365</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
-    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.2.3/js/msal.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-</head>
+    <title>Dynamics 365 Access Token Generator Online</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.0/js/adal.min.js"></script>
+    <script type="text/javascript">
 
-<body>
-<h4 id="WelcomeMessage"></h4>
-<button id="SignIn" onclick="signIn()">Sign In</button>
-<br/><br/>
-<pre id="json"></pre>
+        "use strict";
 
-<script>
-    var applicationConfig = {
-        clientID: 'c3861ff6-6ee6-4a3b-bf1a-5f5a34cbd6ce', //This is your client ID
-        authority: "https://login.microsoftonline.com/common", //Default authority is https://login.microsoftonline.com/common
-        graphScopes: ["user_impersonation"],
-        graphEndpoint: "https://graph.microsoft.com/v1.0/me"
-    };
+        //Set these variables to match your environment
+        var organizationURI = "https://efrig.crm8.dynamics.com"; //The URL to connect to CRM (online)
+        var tenant = "common"; // "efrig.onmicrosoft.com"; //The name of the Azure AD organization you use
+        var clientId = "13950f0e-6bb3-4e2f-8ddb-b923302c4338"; //The ClientId you got when you registered the application
+        var pageUrl = "https://ashishvishwakarma.com/Access-Token-Generator/"; //The URL of this page in your development environment when debugging.
 
-    var myMSALObj = new Msal.UserAgentApplication(applicationConfig.clientID, applicationConfig.authority, acquireTokenRedirectCallBack,
-        {storeAuthStateInCookie: true, cacheLocation: "localStorage"});
+        var user, authContext, message, errorMessage, loginButton, logoutButton, getAccountsButton, accountsTable, accountsTableBody;
 
-    function signIn() {
-        myMSALObj.loginPopup(applicationConfig.graphScopes).then(function (idToken) {
-            //Login Success
-            showWelcomeMessage();
-            acquireTokenPopupAndCallMSGraph();
-        }, function (error) {
-            console.log(error);
-        });
-    }
-
-    function signOut() {
-        myMSALObj.logout();
-    }
-
-   function acquireTokenPopupAndCallMSGraph() {
-        //Call acquireTokenSilent (iframe) to obtain a token for Microsoft Graph
-       myMSALObj.acquireTokenSilent(applicationConfig.graphScopes).then(function (accessToken) {
-           alert(accessToken);
-           console.log(accessToken);
-            callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
-        }, function (error) {
-            console.log(error);
-            // Call acquireTokenPopup (popup window) in case of acquireTokenSilent failure due to consent or interaction required ONLY
-            if (error.indexOf("consent_required") !== -1 || error.indexOf("interaction_required") !== -1 || error.indexOf("login_required") !== -1) {
-                myMSALObj.acquireTokenPopup(applicationConfig.graphScopes).then(function (accessToken) {
-                    callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
-                }, function (error) {
-                    console.log(error);
-                });
-            }
-        });
-    }
-
-    function callMSGraph(theUrl, accessToken, callback) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200)
-                callback(JSON.parse(this.responseText));
-        }
-        xmlHttp.open("GET", theUrl, true); // true for asynchronous
-        xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-        xmlHttp.send();
-    }
-
-    function graphAPICallback(data) {
-        //Display user data on DOM
-        var divWelcome = document.getElementById('WelcomeMessage');
-        divWelcome.innerHTML += " to Microsoft Graph API!!";
-        document.getElementById("json").innerHTML = JSON.stringify(data, null, 2);
-    }
-
-    function showWelcomeMessage() {
-        var divWelcome = document.getElementById('WelcomeMessage');
-        divWelcome.innerHTML += 'Welcome ' + myMSALObj.getUser().name;
-        var loginbutton = document.getElementById('SignIn');
-        loginbutton.innerHTML = 'Sign Out';
-        loginbutton.setAttribute('onclick', 'signOut();');
-    }
-
-    // This function can be removed if you do not need to support IE
-    function acquireTokenRedirectAndCallMSGraph() {
-        //Call acquireTokenSilent (iframe) to obtain a token for Microsoft Graph
-        myMSALObj.acquireTokenSilent(applicationConfig.graphScopes).then(function (accessToken) {
-          callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
-        }, function (error) {
-            console.log(error);
-            //Call acquireTokenRedirect in case of acquireToken Failure
-            if (error.indexOf("consent_required") !== -1 || error.indexOf("interaction_required") !== -1 || error.indexOf("login_required") !== -1) {
-                myMSALObj.acquireTokenRedirect(applicationConfig.graphScopes);
-            }
-        });
-    }
-
-    function acquireTokenRedirectCallBack(errorDesc, token, error, tokenType)
-    {
-     if(tokenType === "access_token")
-     {
-         callMSGraph(applicationConfig.graphEndpoint, accessToken, graphAPICallback);
-     } else {
-            console.log("token type is:"+tokenType);
-     }
-
-    }
-
-    // Browser check variables
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf('MSIE ');
-    var msie11 = ua.indexOf('Trident/');
-    var msedge = ua.indexOf('Edge/');
-    var isIE = msie > 0 || msie11 > 0;
-    var isEdge = msedge > 0;
-
-    //If you support IE, our recommendation is that you sign-in using Redirect APIs
-    //If you as a developer are testing using Edge InPrivate mode, please add "isEdge" to the if check
-    if (!isIE) {
-        if (myMSALObj.getUser()) {// avoid duplicate code execution on page load in case of iframe and popup window.
-            showWelcomeMessage();
-            acquireTokenPopupAndCallMSGraph();
-        }
-    }
-    else {
-        document.getElementById("SignIn").onclick = function () {
-            myMSALObj.loginRedirect(applicationConfig.graphScopes);
+        //Configuration data for AuthenticationContext
+        var endpoints = {
+            orgUri: organizationURI
         };
 
-        if (myMSALObj.getUser() && !myMSALObj.isCallback(window.location.hash)) {// avoid duplicate code execution on page load in case of iframe and popup window.
-            showWelcomeMessage();
-            acquireTokenRedirectAndCallMSGraph();
+        window.config = {
+            tenant: tenant,
+            clientId: clientId,
+            postLogoutRedirectUri: pageUrl,
+            endpoints: endpoints,
+            cacheLocation: 'localStorage', // enable this for IE, as sessionStorage does not work for localhost.
+        };
+
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete") {
+
+                //Set DOM elements referenced by scripts
+                message = document.getElementById("message");
+                errorMessage = document.getElementById("errorMessage");
+                loginButton = document.getElementById("login");
+                logoutButton = document.getElementById("logout");
+                getAccountsButton = document.getElementById("getAccounts");
+                accountsTable = document.getElementById("accountsTable");
+                accountsTableBody = document.getElementById("accountsTableBody");
+
+                //Event handlers on DOM elements
+                loginButton.addEventListener("click", login);
+                logoutButton.addEventListener("click", logout);
+             //   getAccountsButton.addEventListener("click", getAccounts);
+
+                //call authentication function
+                authenticate();
+
+                if (user) {
+                    loginButton.style.display = "none";
+                    logoutButton.style.display = "block";
+                    getAccountsButton.style.display = "block";
+
+                    var helloMessage = document.createElement("p");
+                    helloMessage.textContent = "Hello " + user.profile.name;
+                    message.appendChild(helloMessage)
+
+                }
+                else {
+                    loginButton.style.display = "block";
+                    logoutButton.style.display = "none";
+                    getAccountsButton.style.display = "none";
+                }
+
+            }
         }
-    }
-</script>
+
+        // Function that manages authentication
+        function authenticate() {
+            //OAuth context
+            authContext = new AuthenticationContext(config);
+
+            // Check For & Handle Redirect From AAD After Login
+            var isCallback = authContext.isCallback(window.location.hash);
+            if (isCallback) {
+                authContext.handleWindowCallback();
+            }
+            var loginError = authContext.getLoginError();
+
+            if (isCallback && !loginError) {
+                window.location = authContext._getItem(authContext.CONSTANTS.STORAGE.LOGIN_REQUEST);
+            }
+            else {
+                errorMessage.textContent = loginError;
+            }
+            user = authContext.getCachedUser();
+
+        }
+
+        //function that logs in the user
+        function login() {
+            authContext.login();
+            authContext.acquireToken(organizationURI, retrieveAccounts)
+
+        }
+        //function that logs out the user
+        function logout() {
+            authContext.logOut();
+            accountsTable.style.display = "none";
+            accountsTableBody.innerHTML = "";
+        }
+
+        //function that initiates retrieval of accounts
+        function getAccounts() {
+            
+            // Function to perform operation is passed as a parameter to the aquireToken method
+            authContext.acquireToken(organizationURI, retrieveAccounts)
+
+        }
+
+        //Function that actually retrieves the accounts
+        function retrieveAccounts(error, token) {
+            // Handle ADAL Errors.
+            if (error || !token) {
+                errorMessage.textContent = 'ADAL error occurred: ' + error;
+                return;
+            }
+
+            alert(token);
+            console.log(token);
+
+            var req = new XMLHttpRequest()
+            req.open("GET", encodeURI(organizationURI + "/api/data/v8.0/accounts?$select=name,address1_city&$top=10"), true);
+            //Set Bearer token
+            req.setRequestHeader("Authorization", "Bearer " + token);
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.onreadystatechange = function () {
+                if (this.readyState == 4 /* complete */) {
+                    req.onreadystatechange = null;
+                    if (this.status == 200) {
+                        var accounts = JSON.parse(this.response).value;
+                        renderAccounts(accounts);
+                    }
+                    else {
+                        var error = JSON.parse(this.response).error;
+                        console.log(error.message);
+                        errorMessage.textContent = error.message;
+                    }
+                }
+            };
+            req.send();
+        }
+        //Function that writes account data to the accountsTable
+        function renderAccounts(accounts) {
+            accounts.forEach(function (account) {
+                var name = account.name;
+                var city = account.address1_city;
+                var nameCell = document.createElement("td");
+                nameCell.textContent = name;
+                var cityCell = document.createElement("td");
+                cityCell.textContent = city;
+                var row = document.createElement("tr");
+                row.appendChild(nameCell);
+                row.appendChild(cityCell);
+                accountsTableBody.appendChild(row);
+            });
+            accountsTable.style.display = "block";
+        }
+
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI';
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        td, th {
+            border: 1px solid black;
+        }
+
+        #errorMessage {
+            color: red;
+        }
+
+        #message {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="column">
+            <center>
+                <br />
+                <br />
+                <h1>Dynamics 365 Access Token Generator</h1>
+                <h5>βeta version</h5>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <button id="login">Generate Access Token for My Organization</button>
+            </center>
+        </div>
+    </div>
+    <button id="logout" style="display:none;">Logout</button>
+    <button id="getAccounts" style="display:none;">Get Accounts</button>
+    <div id="errorMessage"></div>
+    <div id="message"></div>
+
+    <script>(function (i, s, o, g, r, a, m) { i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }, i[r].l = 1 * new Date(); a = s.createElement(o), m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m) })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga'); ga('create', 'UA-88171590-1', 'auto'); ga('send', 'pageview');</script>
 </body>
 </html>
