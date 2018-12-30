@@ -5,6 +5,8 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
     <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.0/js/adal.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.11.2/build/css/alertify.min.css" />
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.11.2/build/alertify.min.js"></script>
     <script type="text/javascript">
 
         "use strict";
@@ -54,7 +56,7 @@
                     loginButton.style.display = "none";
                     logoutButton.style.display = "block";
                     getAccountsButton.style.display = "block";
-                    logoutButton.value = "Disconnect from " + user.profile.name;
+                    logoutButton.innerHTML = "Disconnect from " + user.profile.name;
                     //   var helloMessage = document.createElement("p");
                     // helloMessage.textContent = "Hello " + user.profile.name;
                     //message.appendChild(helloMessage)
@@ -94,10 +96,12 @@
         //function that logs in the user
         function login() {
             authContext.login();
+            alertify.success("Logged In!");
         }
         //function that logs out the user
         function logout() {
             authContext.logOut();
+            alertify.success("Logged Out!");
         }
 
         //function that initiates retrieval of accounts
@@ -117,6 +121,12 @@
             console.log(token);
             document.querySelector("#tokenContainer").value = token;
             document.querySelector("#copyToClipboard").style.display = "block";
+
+            alertify.success("Access Token generated!");
+        }
+
+        function copiedToCliboard() {
+            alertify.success("Access Token copied to clipboard!");
         }
     </script>
     <style>
@@ -159,7 +169,7 @@
                     <textarea id="tokenContainer" style="display:none;"></textarea>
                 </div>
                 <button id="getAccounts" style="display:none;">Generate Access Token for My Organization</button>
-                <button id="copyToClipboard" style="display:none;">Copy To Clipboard</button>
+                <button data-clipboard-target="#tokenContainer" class="copyToClipboard" onclick="copiedToCliboard()" id="copyToClipboard" style="display:none;">Copy To Clipboard</button>
                 <button id="logout" style="display:none;">Logout</button>
             </center>
         </div>
@@ -167,5 +177,9 @@
 
     <div id="errorMessage"></div>
     <div id="message"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+    <script>
+        new ClipboardJS('.copyToClipboard');
+    </script>
 </body>
 </html>
