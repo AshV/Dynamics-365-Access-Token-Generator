@@ -17,7 +17,7 @@
         var clientId = "13950f0e-6bb3-4e2f-8ddb-b923302c4338"; //The ClientId you got when you registered the application
         var pageUrl = "https://ashishvishwakarma.com/Access-Token-Generator/AdalSPA.html"; //The URL of this page in your development environment when debugging.
 
-        var user, authContext, message, errorMessage, loginButton, logoutButton, getTokensButton, accountsTable, accountsTableBody;
+        var user, authContext, message, errorMessage, loginButton, logoutButton, getTokensButton;
 
         //Configuration data for AuthenticationContext
         var endpoints = {
@@ -41,8 +41,6 @@
                 loginButton = document.getElementById("login");
                 logoutButton = document.getElementById("logout");
                 getTokensButton = document.getElementById("getTokens");
-                accountsTable = document.getElementById("accountsTable");
-                accountsTableBody = document.getElementById("accountsTableBody");
 
                 //Event handlers on DOM elements
                 loginButton.addEventListener("click", login);
@@ -130,25 +128,9 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Segoe UI';
-        }
-
-        table {
-            border-collapse: collapse;
-        }
-
-        td, th {
-            border: 1px solid black;
-        }
-
-        #errorMessage {
-            color: red;
-        }
-
-        #message {
-            color: green;
-        }
+        body { font-family: 'Segoe UI'; }
+        #errorMessage { color: red; }
+        #message { color: green; }
     </style>
 </head>
 <body>
@@ -157,7 +139,7 @@
             <center>
                 <br />
                 <br />
-                <h1>Dynamics 365 Access Token Generator</h1>
+                <h1><font color="#9b4dca">Dynamics 365 Access Token Generator</font></h1>
                 <h5>βeta version</h5>
                 <br />
                 <br />
@@ -170,6 +152,15 @@
                 <button id="getTokens" style="display:none;">Generate Access Token for My Organization</button>
                 <button data-clipboard-target="#tokenContainer" class="copyToClipboard" onclick="copiedToCliboard()" id="copyToClipboard" style="display:none;">Copy To Clipboard</button>
                 <button id="logout" style="display:none;">Disconnect from My Organization</button>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <a href="https://github.com/AshV/Access-Token-Generator/issues/new">feedback | got a question? | report bug</a>
+                <br />
+                <br />
+                <a href="https://ashishvishwakarma.com/Easily-Generate-Dynamics-365-Access-Token-Postman-Without-Configuring-Azure">HELP</a>
             </center>
         </div>
     </div>
