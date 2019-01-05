@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <title>Dynamics 365 Access Token Generator Online</title>
@@ -17,7 +17,7 @@
         var clientId = "13950f0e-6bb3-4e2f-8ddb-b923302c4338"; //The ClientId you got when you registered the application
         var pageUrl = "https://ashishvishwakarma.com/Access-Token-Generator/AdalSPA.html"; //The URL of this page in your development environment when debugging.
 
-        var user, authContext, message, errorMessage, loginButton, logoutButton, getAccountsButton, accountsTable, accountsTableBody;
+        var user, authContext, message, errorMessage, loginButton, logoutButton, getTokensButton, accountsTable, accountsTableBody;
 
         //Configuration data for AuthenticationContext
         var endpoints = {
@@ -40,14 +40,14 @@
                 errorMessage = document.getElementById("errorMessage");
                 loginButton = document.getElementById("login");
                 logoutButton = document.getElementById("logout");
-                getAccountsButton = document.getElementById("getAccounts");
+                getTokensButton = document.getElementById("getTokens");
                 accountsTable = document.getElementById("accountsTable");
                 accountsTableBody = document.getElementById("accountsTableBody");
 
                 //Event handlers on DOM elements
                 loginButton.addEventListener("click", login);
                 logoutButton.addEventListener("click", logout);
-                getAccountsButton.addEventListener("click", getAccounts);
+                getTokensButton.addEventListener("click", getTokens);
 
                 //call authentication function
                 authenticate();
@@ -55,8 +55,8 @@
                 if (user) {
                     loginButton.style.display = "none";
                     logoutButton.style.display = "block";
-                    getAccountsButton.style.display = "block";
-                    logoutButton.innerHTML = "Disconnect from " + user.profile.name;
+                    getTokensButton.style.display = "block";
+                    getTokensButton.innerHTML = "Generate Access Token for " + user.profile.name;
                     //   var helloMessage = document.createElement("p");
                     // helloMessage.textContent = "Hello " + user.profile.name;
                     //message.appendChild(helloMessage)
@@ -65,7 +65,7 @@
                 else {
                     loginButton.style.display = "block";
                     logoutButton.style.display = "none";
-                    getAccountsButton.style.display = "none";
+                    getTokensButton.style.display = "none";
                 }
 
             }
@@ -96,16 +96,16 @@
         //function that logs in the user
         function login() {
             authContext.login();
-            alertify.success("Logged In!");
+            alertify.success("Logging In!");
         }
         //function that logs out the user
         function logout() {
             authContext.logOut();
-            alertify.success("Logged Out!");
+            alertify.success("Logging Out!");
         }
 
         //function that initiates retrieval of accounts
-        function getAccounts() {
+        function getTokens() {
             authContext.acquireToken(organizationURI, retrieveAccounts)
             document.querySelector("#tokenContainer").style.display = "block";
         }
@@ -117,7 +117,7 @@
                 errorMessage.textContent = 'ADAL error occurred: ' + error;
                 return;
             }
-            getAccountsButton.style.display = "none";
+            getTokensButton.style.display = "none";
             console.log(token);
             document.querySelector("#tokenContainer").value = token;
             document.querySelector("#copyToClipboard").style.display = "block";
@@ -163,14 +163,13 @@
                 <br />
                 <br />
                 <br />
-                <br />
                 <button id="login">Connect to My Organization</button>
                 <div class="column column-75">
                     <textarea id="tokenContainer" style="display:none;"></textarea>
                 </div>
-                <button id="getAccounts" style="display:none;">Generate Access Token for My Organization</button>
+                <button id="getTokens" style="display:none;">Generate Access Token for My Organization</button>
                 <button data-clipboard-target="#tokenContainer" class="copyToClipboard" onclick="copiedToCliboard()" id="copyToClipboard" style="display:none;">Copy To Clipboard</button>
-                <button id="logout" style="display:none;">Logout</button>
+                <button id="logout" style="display:none;">Disconnect from My Organization</button>
             </center>
         </div>
     </div>
